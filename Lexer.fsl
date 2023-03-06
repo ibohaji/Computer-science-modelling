@@ -12,7 +12,11 @@ System.Globalization.CultureInfo.CurrentCulture <- new System.Globalization.Cult
 let digit       = ['0'-'9']
 let num         = digit+ ( '.' digit+)?  ('E' ('+'|'-')? digit+ )?
 let whitespace  = [' ' '\t']
+let whitespace  = ['\u00A0' ' ' '\r' '\t'] 
 let newline     = "\n\r" | '\n' | '\r'
+
+let var         = ['a'-'z''A'-'Z'](['a'-'z']|['A'-'Z']|digit|'_')*
+let keywords    = ("if"|"fi"|"do"|"od"|"skip"|"true"|"false")
 
 // We define now the rules for recognising and building tokens
 // for each of the tokens of our language we need a rule
@@ -32,3 +36,17 @@ rule tokenize = parse
 | '('           { LPAR }
 | ')'           { RPAR }
 | eof           { EOF }
+
+//Rules for our Language
+
+//Keywords that need a whitespace
+| "if" newline   { lexbuf.EndPos <- lexbuf.EndPos.NextLine; IF }
+| newline "fi"   { lexbuf.EndPos <- lexbuf.EndPos.NextLine; FI }
+| "do" newline   { lexbuf.EndPos <- lexbuf.EndPos.NextLine; DO }
+| newline "od"   { lexbuf.EndPos <- lexbuf.EndPos.NextLine; OD }
+
+
+| "if" whitespace   { IF }
+| whitespace "fi"   { FI }
+| "do" whitespace   { DO }
+| whitespace "od"   { OD }

@@ -26,7 +26,7 @@ let parse parser src =
 
 let rec evaluate: expr -> float =
     function
-    | Num x -> x
+    | Num2 x -> x
     | TimesExpr (a, b) -> evaluate a * evaluate b
     | DivExpr (a, b) -> evaluate a / evaluate b
     | PlusExpr (a, b) -> evaluate a + evaluate b

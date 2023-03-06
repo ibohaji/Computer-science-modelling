@@ -5,7 +5,12 @@ open AST
 
 // Declare the tokens (terminal symbols)
 %token <float> NUM
-%token TIMES DIV PLUS MINUS POW LPAR RPAR EOF
+%token TIMES
+
+%token <string> VAR
+%token ASSIGN SKIP SEP IF FI DO OD THEN CONS LBRA RBRA PLUS MINUS MULT DIV MOD POW LPAR RPAR BREAK CONTINUE TRUE FALSE AND OR SAND SOR NEQ GEQ LEQ EQ GT LT NOT EOF INVALID
+
+
 // NOTE: the actual formats of these tokens are defined in the lexer file
 //       as regular expressions
 
@@ -18,10 +23,24 @@ open AST
 
 // We declare the initial non-terminal symbol
 %start start
+%start startGCL
 
 // We specify the return type of each of then non-terminal symbols
 %type <AST.expr> start
 %type <AST.expr> expression
+
+
+%type <AST.cexp> startGCL
+%type <AST.cexp> C
+%type <AST.gcexp> GC
+%type <AST.aexp> a0
+%type <AST.aexp> a1
+%type <AST.aexp> a2
+%type <AST.aexp> a3
+%type <AST.bexp> b0
+%type <AST.bexp> b1
+%type <AST.bexp> b2
+
 
 // Grammar productions
 %%
@@ -30,6 +49,7 @@ open AST
 // start -> expression
 // here written:
 start: expression EOF             { $1 }
+startGCL: C EOF             { $1 }
 
 // Note that we need to insert an End-Of-File (EOF)
 // The code annotation { $1 } specifies that parsing with this production
@@ -46,8 +66,84 @@ expression:
   | expression POW expression     { PowExpr($1,$3) }
   | PLUS expression               { UPlusExpr($2) }
   | MINUS expression              { UMinusExpr($2) }
-  | NUM                           { Num($1) }
+  | NUM                           { Num2($1) }
   | LPAR expression RPAR          { $2 }
+
+
+//YACC FORMAT 
+C:
+  | Ca SEP C                      { C($1,$3) } 
+  | Ca                            { $1 }                
+                       
+
+Ca:
+  | IF GC FI                      { If($2) }                  
+  | DO GC OD                      { Do($2) }                  
+  | VAR ASSIGN a0                 { Assign(Var($1),$3) }      
+  | VAR LBRA a0 RBRA ASSIGN a0    { Assign(Array($1,$3),$6) } 
+  | SKIP                          { Skip }                    
+  | BREAK                         { Break }                   
+  | CONTINUE                      { Continue }                
+  | LPAR C RPAR                   { $2 }
+
+GC:
+  | GCa CONS GC                   { GC($1,$3) }               
+  | GCa                           { $1 }                      
+
+GCa:
+  | b0 THEN C                     { Then($1,$3) }             
+  | LPAR GC RPAR                  { $2 }                      
+                      
+a0:
+  | a0 PLUS a1                    { Plus($1,$3) }             
+  | a0 MINUS a1                   { Minus($1,$3) }            
+  | a1                            { $1 }                      
+
+a1:
+  | a1 MULT a2                    { Mult($1,$3) }             
+  | a1 DIV a2                     { Div($1,$3) }              
+  | a1 MOD a2                     { Mod($1,$3) }              
+  | a2                            { $1 }                      
+
+a2:
+  | a3 POW a2                     { Pow($1,$3) }              
+  | a3                            { $1 }                      
+
+a3:
+  | NUM                           { Num($1) }                
+  | VAR                           { V(Var($1)) }              
+  | VAR LBRA a0 RBRA              { V(Array($1,$3)) }         
+  | MINUS a3                      { UMinus($2) }              
+  | LPAR a0 RPAR                  { $2 }                      
+
+
+b0:
+  | b0 SOR b1                     { SOr($1,$3) }              
+  | b0 OR b1                      { Or($1,$3) }               
+  | b1                            { $1 }                      
+
+b1:
+  | b1 SAND b2                    { SAnd($1,$3) }           
+  | b1 AND b2                     { And($1,$3) }              
+  | b2                            { $1 }                      
+
+b2:
+  | TRUE                          { True }                    
+  | FALSE                         { False }                   
+  | NOT b2                        { Not($2) }                 
+  | a0 EQ a0                      { Eq($1,$3) }               
+  | a0 NEQ a0                     { Neq($1,$3) }              
+  | a0 GT a0                      { Gt($1,$3) }               
+  | a0 GEQ a0                     { Geq($1,$3) }              
+  | a0 LT a0                      { Lt($1,$3) }               
+  | a0 LEQ a0                     { Leq($1,$3) }              
+  | LPAR b0 RPAR                  { $2 }                      
+
+
+
+
+
+
 
 // Again, the code annotation specifies the result of parsing
 // For example { TimesExpr($1,$3) } specifies that parsing with the production
