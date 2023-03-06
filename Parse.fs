@@ -29,8 +29,6 @@ let rec prettyPrintCExp cexp =
         match cexp with
         | Assign (x,y) -> "" + prettyPrintVar x + ":=" + prettyPrintAExp y
         | Skip -> "skip"
-        | Break -> "break"
-        | Continue -> "continue"
         | C (c1,c2) -> prettyPrintCExp c1 + ";\n" + prettyPrintCExp c2
         | If gc -> "if " + prettyPrintGCExp gc + "\nfi"
         | Do gc -> "do " + prettyPrintGCExp gc + "\nod"
@@ -46,7 +44,6 @@ let rec prettyPrintCExp cexp =
         | Minus (x,y) -> prettyPrintAExp x + "-" + prettyPrintAExp y 
         | Mult (x,y) -> prettyPrintAExp x + "*" + prettyPrintAExp y 
         | Div (x,y) -> prettyPrintAExp x + "/" + prettyPrintAExp y 
-        | Mod (x,y) -> prettyPrintAExp x + "%" + prettyPrintAExp y 
         | UMinus x -> "-" + prettyPrintAExp x 
         | Pow (x,y) -> prettyPrintAExp x + "^" + prettyPrintAExp y
     and prettyPrintGCExp gcexp =
@@ -68,6 +65,8 @@ let rec prettyPrintCExp cexp =
         | Geq (a1,a2) ->  "(" + prettyPrintAExp a1 + ">=" + prettyPrintAExp a2 + ")"
         | Lt (a1,a2) -> "(" + prettyPrintAExp a1 + "<" + prettyPrintAExp a2 + ")"
         | Leq (a1,a2) -> "(" + prettyPrintAExp a1 + "<=" + prettyPrintAExp a2 + ")"
+
+
 
 
 

@@ -25,8 +25,6 @@ type var =
 and cexp = 
     | Assign of (var * aexp)
     | Skip
-    | Break
-    | Continue
     | C of (cexp * cexp)
     | If of (gcexp)
     | Do of (gcexp)
@@ -36,7 +34,6 @@ and aexp =
   | Plus of (aexp * aexp)
   | Minus of (aexp * aexp)
   | Mult of (aexp * aexp)
-  | Mod of (aexp * aexp)
   | Div of (aexp * aexp)
   | UMinus of (aexp)
   | Pow of (aexp * aexp)
