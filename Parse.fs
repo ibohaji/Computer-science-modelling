@@ -74,8 +74,7 @@ let rec prettyPrintCExp cexp =
 
 let rec prettyPrint ast =
    // TODO: start here
-   ast
-    |> prettyPrintCExp
+   prettyPrintCExp ast
     
 
 let analysis (src: string) : string =

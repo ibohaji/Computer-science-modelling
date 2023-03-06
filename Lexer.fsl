@@ -50,3 +50,56 @@ rule tokenize = parse
 | whitespace "fi"   { FI }
 | "do" whitespace   { DO }
 | whitespace "od"   { OD }
+
+
+//C  ::=  x := a  |  A[a] := a  |  skip  |  C ; C  |  if GC fi  |  do GC od
+//GC ::=  b -> C  |  GC [] GC
+//a  ::=  n  |  x  |  A[a]  |  a + a  |  a - a  |  a * a  |  a / a  |  - a  |  a ^ a  |  (a)
+//b  ::=  true  |  false  |  b & b  |  b | b  |  b && b  |  b || b  |  ! b
+//     |  a = a  |  a != a  |  a > a  |  a >= a  |  a < a  |  a <= a  |  (b)
+
+
+| ":="              { ASSIGN }
+| "skip"            { SKIP }
+| ';'               { SEP }
+| "->"              { THEN }
+| "[]"              { CONS }
+| '+'               { PLUS }
+| '-'               { MINUS }
+| '*'               { MULT }
+| '/'               { DIV }
+| '%'               { MOD }
+| '^'               { POW }
+| '['               { LBRA }
+| ']'               { RBRA }
+| '('               { LPAR }
+| ')'               { RPAR }
+| "true"            { TRUE }
+| "false"           { FALSE }
+| "break"           { BREAK }
+| "continue"        { CONTINUE }
+| "&&"              { SAND }
+| "||"              { SOR }
+| '&'               { AND }
+| '|'               { OR }
+| "!="              { NEQ }
+| ">="              { GEQ }
+| "<="              { LEQ }
+| '!'               { NOT }
+| '='               { EQ }
+| '>'               { GT }
+| '<'               { LT }
+
+
+//An error appears if these statements are not allowed 
+| "if"              { INVALID }
+| "fi"              { INVALID }
+| "do"              { INVALID }
+| "od"              { INVALID }
+
+
+//Check for variable names
+| var               { VAR(LexBuffer<_>.LexemeString lexbuf)}
+| num               { NUM((int) (LexBuffer<_>.LexemeString lexbuf)) }
+| eof               { EOF }
+| _                 { INVALID }
