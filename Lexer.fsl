@@ -12,7 +12,11 @@ System.Globalization.CultureInfo.CurrentCulture <- new System.Globalization.Cult
 let digit       = ['0'-'9']
 let num         = digit+ ( '.' digit+)?  ('E' ('+'|'-')? digit+ )?
 let whitespace  = [' ' '\t']
+//let whitespace  = ['\u00A0' ' ' '\r' '\t'] 
 let newline     = "\n\r" | '\n' | '\r'
+
+let var         = ['a'-'z''A'-'Z'](['a'-'z']|['A'-'Z']|digit|'_')*
+let keywords    = ("if"|"fi"|"do"|"od"|"skip"|"true"|"false")
 
 // We define now the rules for recognising and building tokens
 // for each of the tokens of our language we need a rule
@@ -22,13 +26,75 @@ rule tokenize = parse
 // deal with tokens that need to be ignored (skip them)
 | whitespace    { tokenize lexbuf }
 | newline       { lexbuf.EndPos <- lexbuf.EndPos.NextLine; tokenize lexbuf; }
+
 // deal with tokens that need to be built
 | num           { NUM(Double.Parse(LexBuffer<_>.LexemeString lexbuf)) }
-| '*'           { TIMES }
-| '/'           { DIV }
-| '+'           { PLUS }
-| '-'           { MINUS }
-| '^'           { POW }
-| '('           { LPAR }
-| ')'           { RPAR }
-| eof           { EOF }
+
+
+//Rules for our Language
+
+//Keywords that need a whitespace
+| "if" newline   { lexbuf.EndPos <- lexbuf.EndPos.NextLine; IF }
+| newline "fi"   { lexbuf.EndPos <- lexbuf.EndPos.NextLine; FI }
+| "do" newline   { lexbuf.EndPos <- lexbuf.EndPos.NextLine; DO }
+| newline "od"   { lexbuf.EndPos <- lexbuf.EndPos.NextLine; OD }
+
+
+| "if" whitespace   { IF }
+| whitespace "fi"   { FI }
+| "do" whitespace   { DO }
+| whitespace "od"   { OD }
+
+//| "if " { IF }
+//| " fi" { FI }
+//| "do " { DO }
+//| " od" { OD }
+
+//C  ::=  x := a  |  A[a] := a  |  skip  |  C ; C  |  if GC fi  |  do GC od
+//GC ::=  b -> C  |  GC [] GC
+//a  ::=  n  |  x  |  A[a]  |  a + a  |  a - a  |  a * a  |  a / a  |  - a  |  a ^ a  |  (a)
+//b  ::=  true  |  false  |  b & b  |  b | b  |  b && b  |  b || b  |  ! b
+//     |  a = a  |  a != a  |  a > a  |  a >= a  |  a < a  |  a <= a  |  (b)
+
+
+| ":="              { ASSIGN }
+| "skip"            { SKIP }
+| ';'               { SEP }
+| "->"              { THEN }
+| "[]"              { CONS }
+| '+'               { PLUS }
+| '-'               { MINUS }
+| '*'               { MULT }
+| '/'               { DIV }
+| '^'               { POW }
+| '['               { LBRA }
+| ']'               { RBRA }
+| '('               { LPAR }
+| ')'               { RPAR }
+| "true"            { TRUE }
+| "false"           { FALSE }
+| "&&"              { SAND }
+| "||"              { SOR }
+| '&'               { AND }
+| '|'               { OR }
+| "!="              { NEQ }
+| ">="              { GEQ }
+| "<="              { LEQ }
+| '!'               { NOT }
+| '='               { EQ }
+| '>'               { GT }
+| '<'               { LT }
+
+
+//An error appears if these statements are not allowed 
+| "if"              { INVALID }
+| "fi"              { INVALID }
+| "do"              { INVALID }
+| "od"              { INVALID }
+
+
+//Check for variable names
+| var               { VAR(LexBuffer<_>.LexemeString lexbuf)}
+| num               { NUM((float) (LexBuffer<_>.LexemeString lexbuf)) }
+| eof               { EOF }
+| _                 { INVALID }
