@@ -17,8 +17,8 @@ open AST
 // Specify precedence and associativity of operators
 // Precedence is given by the order (from low to high)
 %left PLUS MINUS
-%left TIMES DIV
-%right POW
+%left TIMES MULT DIV THEN
+%right POW CONS
 
 
 // We declare the initial non-terminal symbol
@@ -34,12 +34,8 @@ open AST
 %type <AST.cexp> C
 %type <AST.gcexp> GC
 %type <AST.aexp> a0
-%type <AST.aexp> a1
-%type <AST.aexp> a2
-%type <AST.aexp> a3
 %type <AST.bexp> b0
-%type <AST.bexp> b1
-%type <AST.bexp> b2
+
 
 
 // Grammar productions
