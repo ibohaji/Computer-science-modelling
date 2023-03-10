@@ -29,7 +29,7 @@ let rec prettyPrintCExp cexp =
         match cexp with
         | Assign (x,y) -> "" + prettyPrintVar x + ":=" + prettyPrintAExp y
         | Skip -> "skip"
-        | C (c1,c2) -> prettyPrintCExp c1 + ";\n" + prettyPrintCExp c2
+        | C (c1,c2) -> prettyPrintCExp c1 + ";" + prettyPrintCExp c2
         | If gc -> "if " + prettyPrintGCExp gc + "\nfi"
         | Do gc -> "do " + prettyPrintGCExp gc + "\nod"
     and prettyPrintVar var =
