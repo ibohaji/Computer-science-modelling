@@ -22,12 +22,16 @@ type expr =
 type var = 
     | Var of string
     | Array of (string * aexp)
+
+
 and cexp = 
     | Assign of (var * aexp)
     | Skip
     | C of (cexp * cexp)
     | If of (gcexp)
     | Do of (gcexp)
+
+
 and aexp = 
   | Num of (float)
   | V of var
@@ -37,6 +41,8 @@ and aexp =
   | Div of (aexp * aexp)
   | UMinus of (aexp)
   | Pow of (aexp * aexp)
+
+
 and bexp =
   | True
   | False
@@ -44,13 +50,15 @@ and bexp =
   | SOr of (bexp * bexp)
   | And of (bexp * bexp)
   | Or of (bexp * bexp) 
-  | Not of (bexp)
+  | Not of bexp
   | Eq of (aexp * aexp)
   | Neq of (aexp * aexp)
   | Gt of (aexp * aexp)
   | Geq of (aexp * aexp)
   | Lt of (aexp * aexp)
   | Leq of (aexp * aexp)
+
+
 and gcexp = 
   | Then of (bexp * cexp)
   | GC of (gcexp * gcexp)
