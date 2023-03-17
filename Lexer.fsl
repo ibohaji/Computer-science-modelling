@@ -34,6 +34,7 @@ rule tokenize = parse
 //Rules for our Language
 
 //Keywords that need a whitespace
+
 | "if" newline   { lexbuf.EndPos <- lexbuf.EndPos.NextLine; IF }
 | newline "fi"   { lexbuf.EndPos <- lexbuf.EndPos.NextLine; FI }
 | "do" newline   { lexbuf.EndPos <- lexbuf.EndPos.NextLine; DO }
@@ -94,6 +95,7 @@ rule tokenize = parse
 
 
 //Check for variable names
+
 | var               { VAR(LexBuffer<_>.LexemeString lexbuf)}
 | num               { NUM((float) (LexBuffer<_>.LexemeString lexbuf)) }
 | eof               { EOF }
