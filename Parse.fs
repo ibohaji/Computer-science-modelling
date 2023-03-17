@@ -29,8 +29,8 @@ let rec prettyPrintCExp cexp =
         match cexp with
         | Assign (x,y) -> "" + prettyPrintVar x + ":=" + prettyPrintAExp y
         | Skip -> "skip"
-        | C (c1,c2) -> prettyPrintCExp c1 + ";\n" + prettyPrintCExp c2
-        | If gc -> "if " + prettyPrintGCExp gc + "\nfi"
+        | C (c1,c2) -> prettyPrintCExp c1 + ";" + prettyPrintCExp c2
+        | If gc -> "if  " + prettyPrintGCExp gc + "  fi"
         | Do gc -> "do " + prettyPrintGCExp gc + "\nod"
     and prettyPrintVar var =
         match var with
@@ -54,7 +54,7 @@ let rec prettyPrintCExp cexp =
         match bexp with
         | True -> "true"
         | False -> "false"
-        | SAnd (b1,b2) -> "(" + prettyPrintBExp b1 + "&&" + prettyPrintBExp b2 + ")"
+        | SAnd (b1: bexp,b2) -> "(" + prettyPrintBExp b1 + "&&" + prettyPrintBExp b2 + ")"
         | SOr (b1,b2) -> "(" + prettyPrintBExp b1 + "||" + prettyPrintBExp b2 + ")"
         | And (b1,b2) -> "(" + prettyPrintBExp b1 + "&" + prettyPrintBExp b2 + ")"
         | Or (b1,b2) -> "(" + prettyPrintBExp b1 + "|" + prettyPrintBExp b2 + ")"

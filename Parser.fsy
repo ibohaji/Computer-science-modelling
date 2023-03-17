@@ -35,6 +35,8 @@ open AST
 %type <AST.gcexp> GC
 %type <AST.aexp> a0
 %type <AST.bexp> b0
+%type <AST.bexp> b1
+%type <AST.bexp> b2
 
 
 
