@@ -54,7 +54,7 @@ let rec prettyPrintCExp cexp =
         match bexp with
         | True -> "true"
         | False -> "false"
-        | SAnd (b1,b2) -> "(" + prettyPrintBExp b1 + "&&" + prettyPrintBExp b2 + ")"
+        | SAnd (b1: bexp,b2) -> "(" + prettyPrintBExp b1 + "&&" + prettyPrintBExp b2 + ")"
         | SOr (b1,b2) -> "(" + prettyPrintBExp b1 + "||" + prettyPrintBExp b2 + ")"
         | And (b1,b2) -> "(" + prettyPrintBExp b1 + "&" + prettyPrintBExp b2 + ")"
         | Or (b1,b2) -> "(" + prettyPrintBExp b1 + "|" + prettyPrintBExp b2 + ")"

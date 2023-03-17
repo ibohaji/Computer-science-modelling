@@ -15,25 +15,41 @@ open AST
 type Input = { determinism: Determinism }
 type Output = { dot: string }
 
-
 type Node = string
-type Label = cexp 
+type Label = B of bexp | C of cexp 
+
 type Edge = {
     source : Node;
     label : Label;
     target : Node;
-}
+    }
 
 
+let mutable currentNodeId = 1
 
-let edges(ast: cexp, qS:Node,qF:Node): List<Edge>  = 
+let new_node()=
+    let nodeId = "q" + string currentNodeId
+    currentNodeId <- currentNodeId + 1
+    nodeId
+
+
+let rec edges(ast: Label, qS:Node,qF:Node): List<Edge>  = 
     match ast with
         | Skip -> [{source =qS ; label =ast ; target=qF}]
         | Assign(_,_) -> [{source = qS; label = ast; target =qF}]
-        | C(c) ->  [{source =qS ; label =ast ; target=qF}]
-        | If gc -> [{source =qS ; label =ast ; target=qF}]
+        | C(c1,c2) ->              let q = new_node()
+                                   List.concat [edges(c1, qS, q); edges(c2, q , qF)]
+        | If gc -> 
+            match gc with
+            |Then(b,c) -> [{source = qS; label = b; target =qF}]@[{source = qS; label = c; target =qF}]
         | Do gc ->  [{source =qS ; label =ast ; target=qF}]
         
+
+
+        
+
+
+
 let ast2pg(ast): List<Edge>  = 
     edges(ast,"q0","qf")
 
