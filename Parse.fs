@@ -1,5 +1,4 @@
 module Parse
-
 open FSharp.Text.Lexing
 open System
 open AST
