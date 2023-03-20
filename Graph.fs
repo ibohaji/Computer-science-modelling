@@ -40,15 +40,15 @@ let rec edgesC(ast: cexp, qS:Node,qF:Node): List<Edge>  =
         | C (c1,c2) -> 
             let q = getNextNodeName()
             edgesC(c1, qS, q) @ edgesC(c2,q,qF)
-        | If gc ->  edgesGC(gc,qS,qF) 
+        | If gc ->   edgesGC(gc,qS,qF) 
         | Do gc ->  edgesGC(gc,qS,qF) 
         
 
 and edgesGC (ast, qS, qF) = 
     match ast with 
         | Then(b,c) -> 
-                let q1 = getNextNodeName() 
-                [{source =qS ; label = B b ; target=q1}] @ edgesC(c,q1,qF)
+                let q = getNextNodeName() 
+                [{source =qS ; label = B b ; target=q}]  @ edgesC(c,q,qF) @  [{source =qS ; label = B (Not b); target=qF}]
         | GC(gc1,gc2) -> let q1 = getNextNodeName()
                          let q2 = getNextNodeName()
                          edgesGC(gc1,qS,q1) @ edgesGC(gc2,q1,qF)
