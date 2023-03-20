@@ -68,8 +68,7 @@ let label2dot(l:Label) =
 
 
 let edge2dot(e: Edge) : string =
-    e.source + " -> " + e.target + "[label=" + "'"+ label2dot(e.label) +"'"+ "]" + ";"
-
+    e.source + " -> " + e.target + "[label=" + label2dot(e.label)  + "]" + ";"
 
 let rec edges2dot (pg : List<Edge>): string = 
     match pg with
