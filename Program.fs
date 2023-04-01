@@ -49,9 +49,9 @@ let main (args) =
         | Error e -> Console.Error.WriteLine("Parse error: {0}", e)
 
         0
-    | [ "parse"; src ] ->
-        let output:string = Parse.analysis src
-        Console.WriteLine("{0}", output)
+    | "parse" :: src :: _ ->
+        let output: string = Parse.analysis src
+        Console.WriteLine("{0}", JsonConvert.SerializeObject output)
 
         0
     | [ "graph"; src; input ] ->
@@ -90,7 +90,7 @@ let main (args) =
               "parse <SRC>"
               "graph <SRC> <INPUT>"
               "interpreter <SRC> <INPUT>"
-              "pv <SRC> <INPUT>"
+              "program-verification <SRC> <INPUT>"
               "sign <SRC> <INPUT>"
               "security <SRC> <INPUT>" ]
 
