@@ -22,13 +22,23 @@ let analysis (src: string) (input: Input) : Output =
             failwith
                 $"Failed to parse.\n\nDid you remember to surround your program with predicate blocks, like so?\n\n  {{ true }} skip {{ true }}\n\n{e}"
 
-    // TODO: Remove these print statements
-    Console.Error.WriteLine("P = {0}", P)
-    Console.Error.WriteLine("C = {0}", C)
-    Console.Error.WriteLine("Q = {0}", Q)
 
-    let verification_conditions: List<Predicate> =
-        failwith "Program verification not yet implemented" // TODO: start here
 
+    let rec subst(p,v: string,e:AExpr): Predicate = 
+        match p with 
+        // just a test more logic is needed for the first clause to substitute the needed expressions with a fresh variable
+        | RelationalOp(a1,r,a2) -> BooleanOp(RelationalOp(a1,r,a2),And,RelationalOp(Variable(v),Eq,e))
+        |_ -> failwith"notyet"
+
+    let rec sPC(C:Command,P:Predicate): Predicate =
+        match C with 
+        | Skip -> P
+        | Assign(string,expr) -> subst(P,string,expr)
+        | Sep(c1,c2) -> sPC(c1,sPC(c2,P))
+        | If gc -> failwith"notyet"
+        | Do(p,gc) -> failwith "notyet"
+        |_ -> failwith "not implmnted yet"
+
+    let verification_conditions: List<Predicate> = [BooleanOp(sPC(C,P),Implies,Q)]@[]
     // Let this line stay as it is.
     { verification_conditions = List.map serialize_predicate verification_conditions }
