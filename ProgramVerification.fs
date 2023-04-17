@@ -21,15 +21,11 @@ let analysis (src: string) (input: Input) : Output =
         | Error e ->
             failwith
                 $"Failed to parse.\n\nDid you remember to surround your program with predicate blocks, like so?\n\n  {{ true }} skip {{ true }}\n\n{e}"
-
-
-    let mutable freshVarCounter = -1
-    let freshVar() =
-        freshVarCounter <- freshVarCounter + 1
-        sprintf "_f%d" freshVarCounter
    
-
-
+    let varPrime (n:int) = 
+        let mutable k = 0
+        let k = k+n
+        "_f" + string(k)
 
     let rec replaceVarWithFresh (e: AExpr) (v: string) (var: string): AExpr =
         match e with
@@ -45,44 +41,69 @@ let analysis (src: string) (input: Input) : Output =
         | Function(f) -> Function(f)
         
 
+    and newPredicate (P:Predicate) (f:String) (leftSide: string) (rightSide) :Predicate = 
+        match P with 
+            |RelationalOp(right,rop,left) -> 
+                let newAexpr = replaceVarWithFresh right leftSide f
+             //   let newRightSide = replaceVarWithFresh rightSide leftSide f
+                let newP1 = RelationalOp(newAexpr,rop,left)
+               // let newP2: Predicate = RelationalOp(Variable(leftSide),Eq,newRightSide)
+                newP1
+            |_ ->failwith"wth"
 
 
-                    
 
-
-
-    and fresh(a1: AExpr,r,a2,e: AExpr,v,freshVarName) = 
-            let q = replaceVarWithFresh a1 v freshVarName
-            let expr = replaceVarWithFresh e v freshVarName
-            let newPredicate =  BooleanOp(RelationalOp(q, r, a2), LAnd, RelationalOp(Variable(v), Eq, expr))
-            newPredicate
+     and newArithmeticExp s e f = 
+        let newA = replaceVarWithFresh e s f 
+        newA 
+   
         
+    and VC (string:string) (expr:AExpr) (P:Predicate) (var:String):Predicate= 
+        match P with 
+            | Bool(b) -> P
+            | RelationalOp(aexp1,rop,aexpr2) -> 
+                let newp1 = newPredicate P var string expr
+                newp1
+            | BooleanOp(p1,bop,p2) -> 
+                BooleanOp(VC string expr p1 var,bop,VC string expr p2 var)
+            | Exists(v,p) ->Exists(v,VC string expr p var)
+            | Forall(var,P) ->P
+            | Not(P) -> P
 
-    and subst(p,v: string,e:AExpr,freshVarName): Predicate = 
-        match p with 
-        // just a test more logic is needed for the first clause to substitute the needed expressions with a fresh variable
-        | RelationalOp(a1,r,a2) -> fresh(a1,r,a2,e,v,freshVarName)
-        | BooleanOp(p1,b,p2: Predicate) ->
-            let newP1: Predicate = subst(p1,v,e,freshVarName)
-            let newP2: Predicate = subst(p2,v,e,freshVarName)
-            BooleanOp(newP1,b,newP2)
-        | Exists(s,P:Predicate) -> subst(P,v,e,freshVarName)
-        |_ -> failwith "not yet bro"
+    and DoneGC gc P var n = 
+        match gc with 
+         | Guard(bexpr,c) -> sPC(c,P,var,n)
+         | Choice(gc1,gc2) -> failwith "notyet"
 
 
-    let varName = freshVar()
-
-    let rec sPC(C:Command,P:Predicate): Predicate =
+    and gcHandler gc P var n =
+        match gc with 
+            | Guard(b,c) -> sPC(c,BooleanOp(b,LAnd,P),var,n)
+            | Choice(gc1,gc2) -> BooleanOp(gcHandler gc1 P var n,LOr,gcHandler gc2 P (varPrime(n+1)) (n+1))
+    
+    and sPC(C:Command,P:Predicate,var:String,n:int): Predicate =
         match C with 
         | Skip -> P
-        | Assign(string,expr) -> 
-                Exists(varName,subst(P,string,expr,varName))
-        | Sep(c1,c2) ->           
-              Exists(varName,sPC(c2,sPC(c1,P)))
-        | If gc -> failwith"notyet"
-        | Do(p,gc) -> failwith "notyet"
-        |_ -> failwith "not implmnted yet"
+        | Assign(string,expr) ->
+        //         let newA = newArithmeticExp string expr var
+         let newA = RelationalOp(Variable(string),Eq,newArithmeticExp string expr var)
+         Exists(var,BooleanOp(VC string expr P var,LAnd,newA))
+        | Sep(c1,c2) ->
+              sPC(c2,sPC(c1,P,varPrime(n+1),0),var,n+1)
+        | If (gc:GuardedCommand) -> gcHandler gc P var n
+        | Do(p,gc: GuardedCommand) -> DoneGC gc p var n
+        | ArrayAssign(array,idx,aexpr) -> Exists(var,BooleanOp(P,LAnd,RelationalOp(LogicalArray(array,idx),Eq,aexpr)))
 
-    let verification_conditions: List<Predicate> = [BooleanOp(sPC(C,P),Implies,Q)]@[]
+    
+
+    let rec verification_conditions: List<Predicate> =
+        match C with
+            |Do(inv,gc) ->
+                match gc with 
+                    | Guard(b,c) ->
+                        [BooleanOp(BooleanOp(inv,LAnd,Not(b)),Implies,Q)] @ [BooleanOp(P,Implies,inv)] @ [BooleanOp(sPC(C,BooleanOp(b,LAnd,P),varPrime 0,0),Implies,Q)]@[] 
+                    |_ -> failwith "g"
+            |_ ->   [BooleanOp(sPC(C,P,varPrime 0,0),Implies,Q)]@[]
+      
     // Let this line stay as it is.
-    { verification_conditions = List.map serialize_predicate verification_conditions }
+    { verification_conditions = List.map serialize_predicate verification_conditions}
